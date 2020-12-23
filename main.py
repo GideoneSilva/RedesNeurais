@@ -39,7 +39,6 @@ class MyWindow(QMainWindow):
         self.line_edit = QLineEdit(self)
         self.line_edit.adjustSize()
         self.line_edit.setFixedSize(QSize(100, 20))
-        self.receive = str(self.line_edit)
 
         self.epocas_edit = QLineEdit(self)
         self.epocas_edit.adjustSize()
@@ -124,83 +123,89 @@ class MyWindow(QMainWindow):
             self.layout.setColumnStretch(i, 1)
 
     def confirmar(self):
-        ca1 = self.calendario1.selectedDate().toString('yyyy-MM-dd')
-        ca2 = self.calendario2.selectedDate().toString('yyyy-MM-dd')
+        try:
+            ca1 = self.calendario1.selectedDate().toString('yyyy-MM-dd')
+            ca2 = self.calendario2.selectedDate().toString('yyyy-MM-dd')
+            self.recebe1 = self.line_edit.text().upper()
 
-        # Convertendo numero recebido
-        self.recebe2 = self.epocas_edit.text()
-        self.num1 = int(self.recebe2)
+            # Convertendo numero recebido
+            self.recebe2 = self.epocas_edit.text()
+            self.num1 = int(self.recebe2)
 
-        self.recebe3 = self.neuronios_edit.text()
-        self.num2 = int(self.recebe3)
+            self.recebe3 = self.neuronios_edit.text()
+            self.num2 = int(self.recebe3)
 
-        self.recebe4 = self.learning_edit.text()
-        self.num3 = float(self.recebe4)
+            self.recebe4 = self.learning_edit.text()
+            self.num3 = float(self.recebe4)
 
-        self.recebe5 = self.momentum_edit.text()
-        self.num4 = float(self.recebe5)
+            self.recebe5 = self.momentum_edit.text()
+            self.num4 = float(self.recebe5)
 
-        self.recebe1 = self.line_edit.text()
-        self.acao = yf.Ticker(self.recebe1)
+            self.acao = yf.Ticker(self.recebe1)
 
-        self.dados = self.acao.info["longName"]
-        self.dados += "\n"
-        self.dados += self.acao.info["sector"]
-        self.dados += "\n"
-        self.dados += self.acao.info["country"]
-        self.exibeAcao.setText(self.dados)
-        self.exibeAcao.adjustSize()
-        self.exibeAcao.setWordWrap(True)
+            self.dados = self.acao.info["longName"]
+            self.dados += "\n"
+            self.dados += self.acao.info["sector"]
+            self.dados += "\n"
+            self.dados += self.acao.info["country"]
+            self.exibeAcao.setText(self.dados)
+            self.exibeAcao.adjustSize()
+            self.exibeAcao.setWordWrap(True)
 
-        # Coletar dados
-        self.data = yf.download(self.recebe1, start=ca1, end=ca2)  # Hoje é 18 Nov 2020
+            # Coletar dados
+            self.data = yf.download(self.recebe1, start=ca1, end=ca2)  # Hoje é 18 Nov 2020
 
-        # Coletar somente o fechamento diário
-        self.data = self.data.Close
-        self.tData = self.data.size
-        print(self.tData)
+            # Coletar somente o fechamento diário
+            self.data = self.data.Close
+            self.tData = self.data.size
 
-        treinamento = round(self.data.size * .8)
-        print(treinamento)
+            treinamento = round(self.data.size * .8)
 
-        teste = self.data.size - round(self.data.size * .8)
-        print(teste)
+            teste = self.data.size - round(self.data.size * .8)
 
-        # Plotar o gráfico todo
-        plt.figure(figsize=(18, 6))
-        plt.plot(self.data, '-')
-        plt.xlabel(ca2)
-        plt.ylabel('VALOR R$')
-        plt.title(self.recebe1)
-        plt.show()
+            # Plotar o gráfico todo
+            plt.figure(figsize=(18, 6))
+            plt.plot(self.data, '-')
+            plt.xlabel(ca2)
+            plt.ylabel('VALOR R$')
+            plt.title(self.recebe1)
+            plt.show()
 
-        # Plotar treinamento e teste
-        plt.figure(figsize=(18, 6))
-        plt.plot(self.data, '-')
-        plt.xlabel('DIAS')
-        plt.ylabel('VALOR R$')
-        plt.title(self.recebe1)
-        plt.show()
+            # Plotar treinamento e teste
+            plt.figure(figsize=(18, 6))
+            plt.plot(self.data, '-')
+            plt.xlabel('DIAS')
+            plt.ylabel('VALOR R$')
+            plt.title(self.recebe1)
+            plt.show()
 
-        # Plotar treinamento e teste
-        plt.figure(figsize=(18, 6))
-        plt.plot(self.data[:self.tData], 'r-')
-        plt.plot(self.data[self.tData:], 'g-')
-        plt.xlabel('DIAS')
-        plt.ylabel('VALOR R$')
-        plt.title(self.recebe1)
-        plt.axvline(self.data.index[treinamento], 0, 30, color='k', linestyle='dashed', label='Teste')
-        plt.text(self.data.index[treinamento], 25, 'Treinamento', fontsize='x-large')
-        plt.text(self.data.index[teste], 15, 'Testes', fontsize='x-large')
-        plt.show()
+            # Plotar treinamento e teste
+            plt.figure(figsize=(18, 6))
+            plt.plot(self.data[:self.tData], 'r-')
+            plt.plot(self.data[self.tData:], 'g-')
+            plt.xlabel('DIAS')
+            plt.ylabel('VALOR R$')
+            plt.title(self.recebe1)
+            plt.axvline(self.data.index[treinamento], 0, 30, color='k', linestyle='dashed', label='Teste')
+            plt.text(self.data.index[treinamento], 25, 'Treinamento', fontsize='x-large')
+            plt.text(self.data.index[teste], 15, 'Testes', fontsize='x-large')
+            plt.show()
 
-        # Plotar apenas teste
-        plt.figure(figsize=(10, 6))
-        plt.plot(self.data[treinamento:], 'g-')
-        plt.xlabel('DIAS')
-        plt.ylabel('VALOR R$')
-        plt.title(self.recebe1)
-        plt.show()
+            # Plotar apenas teste
+            plt.figure(figsize=(10, 6))
+            plt.plot(self.data[treinamento:], 'g-')
+            plt.xlabel('DIAS')
+            plt.ylabel('VALOR R$')
+            plt.title(self.recebe1)
+            plt.show()
+
+        except:
+            self.error = QMessageBox()
+            self.error.setIcon(QMessageBox.Critical)
+            self.error.setWindowTitle("ERRO")
+            self.error.setText("Ação não existe")
+            self.error.setStandardButtons(QMessageBox.Ok)
+            self.error.exec_()
 
     def analise(self):
         # Criar janela deslizante
@@ -260,9 +265,10 @@ class MyWindow(QMainWindow):
         criterion = torch.nn.MSELoss()
 
         # Criando os paramêtros (learning rate[obrigatória] e momentum[opcional])
-        lr = self.num3  # 0.01
-        momentum = self.num4  # 0.01
+        lr = self.num3
+        momentum = self.num4
         optimizer = torch.optim.SGD(model.parameters(), lr, momentum)
+
         # Para visualizar os pesos
         for param in model.parameters():
             # print(param)
@@ -297,22 +303,23 @@ class MyWindow(QMainWindow):
             errors = np.array(errors)
             lasterrors = np.array(errors[-25000:])
             plt.figure(figsize=(18, 5))
-            graf01 = plt.subplot(1, 3, 1) # nrows, ncols, index
+            graf01 = plt.subplot(1, 3, 1)  # nrows, ncols, index
             graf01.set_title('Errors')
             plt.plot(errors, '-')
             plt.xlabel('Epochs')
-            graf02 = plt.subplot(1, 3, 2) # nrows, ncols, index
+            graf02 = plt.subplot(1, 3, 2)  # nrows, ncols, index
             graf02.set_title('Last 25k Errors')
             plt.plot(lasterrors, '-')
             plt.xlabel('Epochs')
             graf03 = plt.subplot(1, 3, 3)
             graf03.set_title('Tests')
             a = plt.plot(test_output.numpy(), 'y-', label='Real')
-            #plt.setp(a, markersize=10)
+            # plt.setp(a, markersize=10)
             a = plt.plot(y_pred.detach().numpy(), 'b-', label='Predicted')
-            #plt.setp(a, markersize=10)
+            # plt.setp(a, markersize=10)
             plt.legend(loc=7)
             plt.show()
+
         plotcharts(errors)
 
 def window():
@@ -320,6 +327,4 @@ def window():
     win = MyWindow()
     win.show()
     sys.exit(app.exec_())
-
-
 window()
