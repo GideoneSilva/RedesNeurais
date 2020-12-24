@@ -162,7 +162,7 @@ class MyWindow(QMainWindow):
             self.data = self.data.Close
             self.tData = self.data.size
 
-            treinamento = round(self.data.size * .8)
+            self.treinamento = round(self.data.size * .8)
 
             teste = self.data.size - round(self.data.size * .8)
 
@@ -189,14 +189,14 @@ class MyWindow(QMainWindow):
             plt.xlabel('DIAS')
             plt.ylabel('VALOR R$')
             plt.title(self.recebe1)
-            plt.axvline(self.data.index[treinamento], 0, 30, color='k', linestyle='dashed', label='Teste')
-            plt.text(self.data.index[treinamento], 25, 'Treinamento', fontsize='x-large')
-            plt.text(self.data.index[teste], 15, 'Testes', fontsize='x-large')
+            plt.axvline(self.data.index[self.treinamento], 0, 30, color='k', linestyle='dashed', label='Teste')
+            plt.text(self.data.index[self.treinamento], 25, 'Testes', fontsize='x-large')
+            plt.text(self.data.index[teste], 15, 'Treinamento', fontsize='x-large')
             plt.show()
 
             # Plotar apenas teste
             plt.figure(figsize=(10, 6))
-            plt.plot(self.data[treinamento:], 'g-')
+            plt.plot(self.data[self.treinamento:], 'g-')
             plt.xlabel('DIAS')
             plt.ylabel('VALOR R$')
             plt.title(self.recebe1)
@@ -211,126 +211,116 @@ class MyWindow(QMainWindow):
             self.error.exec_()
 
     def analise(self):
-        try:
-            # Criar janela deslizante
-            janelas = 50
+        # Criar janela deslizante
+        janelas = 50
 
-            data_final = np.zeros([self.data.size - janelas, janelas + 1])
+        data_final = np.zeros([self.data.size - janelas, janelas + 1])
 
-            for i in range(len(data_final)):
-                for j in range(janelas + 1):
-                    data_final[i][j] = self.data.iloc[i + j]
+        for i in range(len(data_final)):
+            for j in range(janelas + 1):
+                data_final[i][j] = self.data.iloc[i + j]
 
-            # Normalizar entre 0 e 1
-            max = data_final.max()
-            min = data_final.min()
-            dif = data_final.max() - data_final.min()
-            data_final = (data_final - data_final.min()) / dif
+        # Normalizar entre 0 e 1
+        max = data_final.max()
+        min = data_final.min()
+        dif = data_final.max() - data_final.min()
+        data_final = (data_final - data_final.min()) / dif
 
-            x = data_final[:, :-1]
-            y = data_final[:, -1]
-            # Converter para tensor
-            # Entrada do treinamento
-            # Saída do treinamento
-            training_input = torch.FloatTensor(x[:self.tData, :])
-            training_output = torch.FloatTensor(y[:self.tData])
+        x = data_final[:, :-1]
+        y = data_final[:, -1]
+        # Converter para tensor
+        # Entrada do treinamento
+        # Saída do treinamento
+        training_input = torch.FloatTensor(x[:self.treinamento, :])
+        training_output = torch.FloatTensor(y[:self.treinamento])
 
-            # Entrada do teste
-            # Saída do teste
-            test_input = torch.FloatTensor(x[self.tData:, :])
-            test_output = torch.FloatTensor(y[self.tData:])
+        # Entrada do teste
+        # Saída do teste
+        test_input = torch.FloatTensor(x[self.treinamento: , :])
+        test_output = torch.FloatTensor(y[self.treinamento:])
 
-            # Classe do modelo da Rede Neural
-            class Net(torch.nn.Module):
-                def __init__(self, input_size, hidden_size):
-                    super(Net, self).__init__()
-                    self.input_size = input_size
-                    self.hidden_size = hidden_size
-                    self.fc1 = torch.nn.Linear(self.input_size, self.hidden_size)
-                    self.relu = torch.nn.ReLU()
-                    self.fc2 = torch.nn.Linear(self.hidden_size, 1)
+        # Classe do modelo da Rede Neural
+        class Net(torch.nn.Module):
+            def __init__(self, input_size, hidden_size):
+                super(Net, self).__init__()
+                self.input_size = input_size
+                self.hidden_size = hidden_size
+                self.fc1 = torch.nn.Linear(self.input_size, self.hidden_size)
+                self.relu = torch.nn.ReLU()
+                self.fc2 = torch.nn.Linear(self.hidden_size, 1)
 
-                def forward(self, x):
-                    hidden = self.fc1(x)
-                    relu = self.relu(hidden)
-                    output = self.fc2(relu)
-                    output = self.relu(output)
-                    return output
+            def forward(self, x):
+                hidden = self.fc1(x)
+                relu = self.relu(hidden)
+                output = self.fc2(relu)
+                output = self.relu(output)
+                return output
 
-            # Criar a instância do modelo
-            input_size = training_input.size()[1]
-            hidden_size = self.num2
-            model = Net(input_size, hidden_size)
-            print(f'Entrada: {input_size}')
-            print(f'Escondida: {hidden_size}')
-            print(model)
+        # Criar a instância do modelo
+        input_size = training_input.size()[1]
+        hidden_size = self.num2
+        model = Net(input_size, hidden_size)
+        print(f'Entrada: {input_size}')
+        print(f'Escondida: {hidden_size}')
+        print(model)
 
-            # Critério de erro
-            criterion = torch.nn.MSELoss()
+        # Critério de erro
+        criterion = torch.nn.MSELoss()
 
-            # Criando os paramêtros (learning rate[obrigatória] e momentum[opcional])
-            lr = self.num3
-            momentum = self.num4
-            optimizer = torch.optim.SGD(model.parameters(), lr, momentum)
+        # Criando os paramêtros (learning rate[obrigatória] e momentum[opcional])
+        lr = self.num3
+        momentum = self.num4
+        optimizer = torch.optim.SGD(model.parameters(), lr, momentum)
 
-            # Para visualizar os pesos
-            for param in model.parameters():
-                # print(param)
-                pass
+        # Para visualizar os pesos
+        for param in model.parameters():
+            # print(param)
+            pass
 
-            # Treinamento
-            model.train()
-            epochs = self.num1
-            errors = []
+        # Treinamento
+        model.train()
+        epochs = self.num1
+        errors = []
 
-            for epoch in range(epochs):
-                optimizer.zero_grad()
-                # Fazer o forward
-                y_pred = model(training_input)
-                # Cálculo do erro
-                loss = criterion(y_pred.squeeze(), training_output)
-                errors.append(loss.item())
-                if epoch % 1000 == 0:
-                    print(f'Epoch: {epoch}. Train loss: {loss.item()}.')
-                # Backpropagation
-                loss.backward()
-                optimizer.step()
+        for epoch in range(epochs):
+            optimizer.zero_grad()
+            # Fazer o forward
+            y_pred = model(training_input)
+            # Cálculo do erro
+            loss = criterion(y_pred.squeeze(), training_output)
+            errors.append(loss.item())
+            if epoch % 1000 == 0:
+                print(f'Epoch: {epoch}. Train loss: {loss.item()}.')
+            # Backpropagation
+            loss.backward()
+            optimizer.step()
 
-            # Testar o modelo já treinado
-            model.eval()
-            y_pred = model(test_input)
-            after_train = criterion(y_pred.squeeze(), test_output)
-            print('Test loss after Training', after_train.item())
+        # Testar o modelo já treinado
+        model.eval()
+        y_pred = model(test_input)
+        after_train = criterion(y_pred.squeeze(), test_output)
+        print('Test loss after Training', after_train.item())
 
-            # Gráficos de erro e de previsão
-            def plotcharts(errors):
-                errors = np.array(errors)
-                lasterrors = np.array(errors[-25000:])
-                plt.figure(figsize=(18, 5))
-                graf01 = plt.subplot(1, 3, 1)  # nrows, ncols, index
-                graf01.set_title('Errors')
-                plt.plot(errors, '-')
-                plt.xlabel('Epochs')
-                graf02 = plt.subplot(1, 3, 2)  # nrows, ncols, index
-                graf02.set_title('Last 25k Errors')
-                plt.plot(lasterrors, '-')
-                plt.xlabel('Epochs')
-                graf03 = plt.subplot(1, 3, 3)
-                graf03.set_title('Tests')
-                a = plt.plot(test_output.numpy(), 'y-', label='Real')
-                # plt.setp(a, markersize=10)
-                a = plt.plot(y_pred.detach().numpy(), 'b-', label='Predicted')
-                # plt.setp(a, markersize=10)
-                plt.legend(loc=7)
-                plt.show()
-            plotcharts(errors)
-        except:
-            self.error = QMessageBox()
-            self.error.setIcon(QMessageBox.Critical)
-            self.error.setWindowTitle("ERRO")
-            self.error.setText("Erro ao iniciar análise digite novamente os dados")
-            self.error.setStandardButtons(QMessageBox.Ok)
-            self.error.exec_()
+        # Gráficos de erro e de previsão
+        def plotcharts(errors):
+            errors = np.array(errors)
+            lasterrors = np.array(errors[-25000:])
+            plt.figure(figsize=(18, 5))
+            graf01 = plt.subplot(1, 3, 1)  # nrows, ncols, index
+            graf01.set_title('Errors')
+            plt.plot(errors, '-')
+            plt.xlabel('Epochs')
+            graf02 = plt.subplot(1, 3, 2)  # nrows, ncols, index
+            graf02.set_title('Last 25k Errors')
+            plt.plot(lasterrors, '-')
+            plt.xlabel('Epochs')
+            graf03 = plt.subplot(1, 3, 3)
+            graf03.set_title('Tests')
+            a = plt.plot(test_output.numpy(), 'y-', label='Real')
+            a = plt.plot(y_pred.detach().numpy(), 'b-', label='Predicted')
+            plt.legend(loc=7)
+            plt.show()
+        plotcharts(errors)
 
 def window():
     app = QApplication(sys.argv)
